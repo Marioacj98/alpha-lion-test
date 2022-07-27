@@ -3503,10 +3503,11 @@ p.guarantee-description {
     display: none;
 }
 }
- 
-
-
-
+ *:focus-visible {
+    outline: .2remsolidrgba(var(--color-foreground),.5);
+    outline-offset: 0rem;
+    box-shadow: 0 0 0 0remrgb(var(--color-background)),0 0 0rem 0rem rgba(var(--color-foreground),0);
+}
 
 
 
