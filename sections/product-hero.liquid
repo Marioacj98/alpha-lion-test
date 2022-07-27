@@ -1,0 +1,387 @@
+<script src="{{ 'product-form.js' | asset_url }}" defer="defer"></script>
+
+<div class="product-hero-container">
+    <div class="product-info">
+        <h1>{{ product.title | escape }}</h1>
+        {%- if product.description != blank -%} 
+            <div class="product__description">
+                {{ product.description }}
+            </div>
+        {%- endif -%}
+        <div class="list-features">
+          <ul>
+            <li>8 Premium, Trademarked Ingredients</li>
+            <li>100% transparent label</li>
+            <li>Banned Substance Free</li>
+            <li>Clean Label - Free of Artificial Colors</li>
+            <li>Safe, side-effect Free</li>
+          </ul>
+        </div>
+    </div>
+    <div class="product-gallery">
+        <div class="grid__item product__media-wrapper">
+            {% if product.images != null %}
+            <div class="carousel product__image-slider" role="document" aria-label="{{ 'products.modal.label' | t }}"
+                tabindex="0">
+                {%- for media in product.media -%}
+                <div class="carousel-cell">
+                    {% if media.media_type == "video" %}
+                    {{ media | media_tag: image_size: "720x", autoplay: true, loop: loop, controls: true, preload:
+                    "none", autoplay: true, height: "100%", width: "100%" }}
+                    {% else %}
+                    <img data-flickity-lazyload-srcset="
+                        {{ media | img_url: '1440x' }} 1440w,
+                        {{ media | img_url: '1080x' }} 1080w,
+                        {{ media | img_url: '720x' }} 767w,
+                        {{ media | img_url: '480x' }} 480w" sizes="(min-width: 480px) 1440px, 1080px, 767px, 480px"
+                        data-flickity-lazyload-src="{{ media | img_url: 'master' }}" alt="{{ media.alt | escape }}"
+                        border="0" data-media-id="{{ media.id }}" />
+                    {% endif %}
+                </div>
+                {%- endfor -%}
+            </div>
+            {% if product.images.size > 1 %}
+            <div class="carousel product__image-thumbnail">
+                {%- for media in product.media -%}
+                <div class="carousel-cell">
+                    <img data-flickity-lazyload-srcset="
+                    {{ media | img_url: '1440x' }} 1440w,
+                    {{ media | img_url: '1080x' }} 1080w,
+                    {{ media | img_url: '720x' }} 767w,
+                    {{ media | img_url: '480x' }} 480w" sizes="(min-width: 480px) 1440px, 1080px, 767px, 480px"
+                        data-flickity-lazyload-src="{{ media | img_url: 'master' }}" alt="{{ media.alt | escape }}"
+                        border="0" data-media-id="{{ media_id }}" />
+                </div>
+                {%- endfor -%}
+            </div>
+            {% endif %}
+            {% else %}
+            {{ 'product-1' | placeholder_svg_tag }}
+            {% endif %}
+        </div>
+    </div>
+    <div class="product-buy-button">
+        <div class="no-js-hidden" id="price-{{ section.id }}" role="status" {{ block.shopify_attributes }}>
+            {%- render 'price', product: product, use_variant: true, show_badges: true, price_class: 'price--large' -%}
+        </div>
+        <label class="label-variations">Select Flavor:</label>
+        <div class="product-variations">
+          <div class="select">
+              <select name="id" id="Variants-{{ section.id }}" class="select__select" form="{{ product_form_id }}">
+                  {%- for variant in product.variants -%}
+                    <option
+                      {% if variant == product.selected_or_first_available_variant %}selected="selected"{% endif %}
+                      {% if variant.available == false %}disabled{% endif %}
+                      value="{{ variant.id }}" 
+                      >
+                      {{ variant.title }}
+                      {%- if variant.available == false %} - {{ 'products.product.sold_out' | t }}{% endif %}
+                      </option>
+                      {%- endfor -%}
+                    </select>
+          </div>
+        </div>
+      <product-form>
+      {%- form 'product', product, id: product_form_id, class: 'form', novalidate: 'novalidate', data-type: 'add-to-cart-form' -%}
+                  <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}" disabled>
+                  <div class="product-form__buttons">
+                    <button
+                      type="submit"
+                      name="add"
+                      class="product-form__submit button button--full-width {% if block.settings.show_dynamic_checkout and product.selling_plan_groups == empty %}button--secondary{% else %}button--primary{% endif %}"
+                    {% if product.selected_or_first_available_variant.available == false %}disabled{% endif %}
+                    >
+                        <span>
+                          {%- if product.selected_or_first_available_variant.available -%}
+                            {{ 'products.product.add_to_cart' | t }}
+                          {%- else -%}
+                            {{ 'products.product.sold_out' | t }}
+                          {%- endif -%}
+                          <svg width="22" height="23" viewBox="0 0 22 23" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <g filter="url(#filter0_d_911_4)">
+                          <path fill-rule="evenodd" clip-rule="evenodd" d="M1.78044 0.963516C1.2582 0.963516 0.834839 1.38821 0.834839 1.91211C0.834839 2.436 1.2582 2.8607 1.78044 2.8607H4.02023L5.05897 5.04871L6.33004 12.3521C4.84644 12.4445 3.67166 13.6808 3.67166 15.1924C3.67166 16.2 4.19372 17.0853 4.98132 17.591C4.74952 18.0034 4.61726 18.4796 4.61726 18.9867C4.61726 20.5584 5.88735 21.8325 7.45408 21.8325C9.02081 21.8325 10.2909 20.5584 10.2909 18.9867C10.2909 18.6541 10.234 18.3348 10.1295 18.0381H15.1803C15.0758 18.3348 15.0189 18.6541 15.0189 18.9867C15.0189 20.5584 16.289 21.8325 17.8557 21.8325C19.4225 21.8325 20.6926 20.5584 20.6926 18.9867C20.6926 17.4151 19.4225 16.141 17.8557 16.141H6.50847C5.98623 16.141 5.56287 15.7163 5.56287 15.1924C5.56287 14.6685 5.98623 14.2438 6.50847 14.2438H7.44074C7.48232 14.2443 7.52439 14.2421 7.56674 14.237L19.3868 12.8141C19.7926 12.7653 20.1212 12.4604 20.2014 12.0583L21.6198 4.94391C21.6754 4.66524 21.6034 4.37626 21.4238 4.15648C21.2442 3.9367 20.9759 3.80929 20.6926 3.80929H6.56529L5.471 1.50424C5.31418 1.17392 4.98198 0.963516 4.61726 0.963516H1.78044ZM17.8557 18.0381C17.3335 18.0381 16.9101 18.4628 16.9101 18.9867C16.9101 19.5106 17.3335 19.9353 17.8557 19.9353C18.378 19.9353 18.8014 19.5106 18.8014 18.9867C18.8014 18.4628 18.378 18.0381 17.8557 18.0381ZM6.50847 18.9867C6.50847 18.4628 6.93184 18.0381 7.45408 18.0381C7.97632 18.0381 8.39969 18.4628 8.39969 18.9867C8.39969 19.5106 7.97632 19.9353 7.45408 19.9353C6.93184 19.9353 6.50847 19.5106 6.50847 18.9867ZM8.23143 12.2462L7.09326 5.70647H19.5391L18.4813 11.0124L8.23143 12.2462Z" fill="white"></path>
+                          </g>
+                          <defs>
+                          <filter id="filter0_d_911_4" x="0.834839" y="0.963516" width="20.8033" height="22.5127" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+                          <feFlood flood-opacity="0" result="BackgroundImageFix"></feFlood>
+                          <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"></feColorMatrix>
+                          <feOffset dy="1.64368"></feOffset>
+                          <feComposite in2="hardAlpha" operator="out"></feComposite>
+                          <feColorMatrix type="matrix" values="0 0 0 0 0.639216 0 0 0 0 0.501961 0 0 0 0 0.258824 0 0 0 1 0"></feColorMatrix>
+                          <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_911_4"></feBlend>
+                          <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_911_4" result="shape"></feBlend>
+                          </filter>
+                          </defs>
+                          </svg>
+                        </span>
+                        <div class="loading-overlay__spinner hidden">
+                          <svg aria-hidden="true" focusable="false" role="presentation" class="spinner" viewBox="0 0 66 66" xmlns="http://www.w3.org/2000/svg">
+                            <circle class="path" fill="none" stroke-width="6" cx="33" cy="33" r="30"></circle>
+                          </svg>
+                        </div>
+                    </button>
+                    {%- if block.settings.show_dynamic_checkout -%}
+                      {{ form | payment_button }}
+                    {%- endif -%}
+                  </div>
+                {%- endform -%}
+              </product-form>
+    </div>
+</div>
+<div class="benefits">
+  <div class="heading-benefits">
+    <h2>Fuel the most intense training sessions in the gym, on the field or on the course!</h2>
+  </div>
+  <div class="group-benefits">
+  <div class="benefit-1">
+    <div
+      class="benefit-icon-bg"
+      style="
+        background: linear-gradient(
+          180deg,
+          rgba(124, 195, 243, 1) 15.62%,
+          rgba(57, 147, 208, 1) 100%
+        );
+      "
+    >
+      <div class="benefit-icon">
+        <div class="benefit-icon-svg">
+          <svg
+            width="23"
+            height="52"
+            viewBox="0 0 23 52"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M22.9333 21.5611H13.2949L18.2178 0.776367H7.91319L0.921234 30.294H10.5596L5.63675 51.0782L22.9333 21.5611Z"
+              fill="white"
+            ></path>
+          </svg>
+        </div>
+      </div>
+    </div>
+    <p class="benefit-description">
+      Promotes Increased Training Capacity & Power Output
+    </p>
+  </div>
+  <div class="benefit-2">
+    <div
+      class="benefit-icon-bg"
+      style="
+        background: linear-gradient(
+          180deg,
+          rgba(124, 195, 243, 1) 15.62%,
+          rgba(57, 147, 208, 1) 100%
+        );
+      "
+    >
+      <div class="benefit-icon">
+        <div class="benefit-icon-svg">
+          <svg
+            width="42"
+            height="38"
+            viewBox="0 0 42 38"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              fill-rule="evenodd"
+              clip-rule="evenodd"
+              d="M15.2004 17.7483H1.41064C-1.06674 12.9902 -0.236044 7.38519 3.54854 3.62107C8.28408 -1.0901 15.9415 -1.06945 20.6518 3.66651C25.3626 -1.06945 33.02 -1.0901 37.7556 3.62107C41.5401 7.38519 42.3711 12.9902 39.8936 17.7483H29.5786L27.0949 13.0771L27.0705 13.006L27.0642 13.0194L27.0617 13.0147L27.0482 13.0537L23.5856 20.4794L19.186 6.08916L18.4214 11.0176L16.2297 21.3289L15.4024 17.7054L15.2004 17.7483ZM13.7391 19.8135H2.74236C3.0966 20.267 3.48581 20.7074 3.91036 21.1321C9.72354 26.9448 19.024 36.2494 20.6518 37.8781C22.2809 36.2494 31.5801 26.9448 37.3937 21.1321C37.8183 20.7074 38.2076 20.267 38.5618 19.8135H28.3552L28.3416 19.8208L28.3377 19.8135H28.3072V19.7562L27.1854 17.6463L23.2142 26.1625L22.2631 23.3154L22.2806 23.2778L19.6794 15.0323L17.3231 26.118L17.3291 26.1445L16.1525 31.1675L13.7391 19.8135Z"
+              fill="white"
+            ></path>
+          </svg>
+        </div>
+      </div>
+    </div>
+    <p class="benefit-description">
+      Potent Adaptogen Support for Vitality & Increased Endurance
+    </p>
+  </div>
+  <div class="benefit-3">
+    <div
+      class="benefit-icon-bg"
+      style="
+        background: linear-gradient(
+          180deg,
+          rgba(124, 195, 243, 1) 15.62%,
+          rgba(57, 147, 208, 1) 100%
+        );
+      "
+    >
+      <div class="benefit-icon">
+        <div class="benefit-icon-svg">
+          <svg
+            width="45"
+            height="45"
+            viewBox="0 0 45 45"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M38.6522 8.26489C39.266 8.26489 39.7484 7.78256 39.7484 7.16867C39.7484 6.55479 39.266 6.07245 38.6522 6.07245H33.9603C33.3464 6.07245 32.8641 6.55479 32.8641 7.16867V11.8605C32.8641 12.4744 33.3464 12.9567 33.9603 12.9567C34.5742 12.9567 35.0566 12.4744 35.0566 11.8605V9.84346C37.249 12.0359 38.8714 14.7984 39.6607 17.824C40.45 20.8495 40.45 24.0505 39.6607 27.0761C38.8714 30.1017 37.249 32.8641 35.0566 35.0566C32.8641 37.249 30.0578 38.8714 27.076 39.6607C24.0505 40.45 20.8495 40.45 17.8239 39.6607C17.2539 39.4853 16.64 39.8361 16.4646 40.45C16.2892 41.02 16.64 41.6339 17.2539 41.8093C18.964 42.2478 20.6741 42.5109 22.4281 42.5109C24.182 42.5109 25.936 42.2917 27.6022 41.8093C30.9786 40.8885 34.0919 39.0907 36.5913 36.6351C39.0907 34.1358 40.8885 31.0225 41.7654 27.6461C42.6863 24.2697 42.6863 20.6741 41.7654 17.2539C40.8446 13.8776 39.0468 10.7643 36.5913 8.26489H38.6522Z"
+              fill="white"
+            ></path>
+            <path
+              d="M9.79949 9.79956C11.9919 7.60711 14.7983 5.9847 17.78 5.19542C20.8056 4.40614 24.0065 4.40614 27.0321 5.19542C27.6022 5.37081 28.216 5.02002 28.3914 4.40614C28.5668 3.8361 28.216 3.22222 27.6022 3.04682C24.2258 2.12599 20.6302 2.12599 17.21 3.04682C13.8336 3.96765 10.7203 5.76546 8.26478 8.26484C5.76539 10.7204 3.96759 13.8337 3.04676 17.2539C2.12593 20.6302 2.12593 24.2259 3.04676 27.6461C3.96759 31.0224 5.76539 34.1357 8.22093 36.6351H6.20388C5.59 36.6351 5.10766 37.1174 5.10766 37.7313C5.10766 38.3452 5.59 38.8275 6.20388 38.8275H10.8957C11.5096 38.8275 11.9919 38.3452 11.9919 37.7313V33.0395C11.9919 32.4256 11.5096 31.9433 10.8957 31.9433C10.2818 31.9433 9.79949 32.4256 9.79949 33.0395V35.0565C7.60705 32.8641 5.98464 30.1016 5.19536 27.076C4.40608 24.0505 4.40608 20.8495 5.19536 17.8239C5.98464 14.7983 7.60705 12.0359 9.79949 9.79956Z"
+              fill="white"
+            ></path>
+            <path
+              d="M29.3713 20.0539C30.4242 20.0539 31.2778 20.9074 31.2778 21.9603V22.1052C31.2778 23.1581 30.4242 24.0117 29.3713 24.0117H14.9821C13.9291 24.0117 13.0756 23.1581 13.0756 22.1052V21.9603C13.0756 20.9074 13.9291 20.0539 14.9821 20.0539H29.3713ZM22.4041 12.6125C23.4571 12.6125 24.3106 13.466 24.3106 14.519V30.039C24.3106 31.0919 23.4571 31.9455 22.4041 31.9455H21.9675C20.9146 31.9455 20.061 31.0919 20.061 30.039V14.519C20.061 13.466 20.9146 12.6125 21.9675 12.6125H22.4041Z"
+              fill="white"
+            ></path>
+          </svg>
+        </div>
+      </div>
+    </div>
+    <p class="benefit-description">
+      Aids in Recovery & Reduces Muscle Soreness Post-Training
+    </p>
+  </div>
+  <div class="benefit-4">
+    <div
+      class="benefit-icon-bg"
+      style="
+        background: linear-gradient(
+          180deg,
+          rgba(124, 195, 243, 1) 15.62%,
+          rgba(57, 147, 208, 1) 100%
+        );
+      "
+    >
+      <div class="benefit-icon">
+        <div class="benefit-icon-svg">
+          <svg
+            width="49"
+            height="49"
+            viewBox="0 0 49 49"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <g clip-path="url(#clip0_118_277)">
+              <path
+                d="M27.7048 0.690613H21.1414C20.6314 0.690613 20.218 1.10405 20.218 1.61406V5.11919C20.218 5.6292 20.6314 6.04264 21.1414 6.04264H27.7048C28.2148 6.04264 28.6283 5.6292 28.6283 5.11919V1.61406C28.6283 1.10405 28.2148 0.690613 27.7048 0.690613Z"
+                fill="white"
+              ></path>
+              <path
+                d="M34.6853 10.8584H14.1807V17.7297H34.6853V10.8584Z"
+                fill="white"
+              ></path>
+              <path
+                d="M34.6853 19.9341H14.1807V26.7954H34.6853V19.9341Z"
+                fill="white"
+              ></path>
+              <path
+                d="M34.6853 29.0097H14.1807V35.881H34.6853V29.0097Z"
+                fill="white"
+              ></path>
+              <path
+                d="M37.8428 7.4527H11.033C10.9143 7.45528 10.7973 7.48121 10.6887 7.52902C10.58 7.57683 10.4819 7.64558 10.3998 7.73133C10.3178 7.81709 10.2534 7.91817 10.2104 8.02881C10.1674 8.13945 10.1466 8.25748 10.1493 8.37615V47.4291C10.1466 47.5477 10.1674 47.6658 10.2104 47.7764C10.2534 47.8871 10.3178 47.9881 10.3998 48.0739C10.4819 48.1596 10.58 48.2284 10.6887 48.2762C10.7973 48.324 10.9143 48.3499 11.033 48.3525H37.8428C37.9615 48.3499 38.0785 48.324 38.1871 48.2762C38.2958 48.2284 38.3939 48.1596 38.476 48.0739C38.5581 47.9881 38.6224 47.8871 38.6654 47.7764C38.7084 47.6658 38.7292 47.5477 38.7265 47.4291V8.37615C38.7292 8.25748 38.7084 8.13945 38.6654 8.02881C38.6224 7.91817 38.5581 7.81709 38.476 7.73133C38.3939 7.64558 38.2958 7.57683 38.1871 7.52902C38.0785 7.48121 37.9615 7.45528 37.8428 7.4527ZM36.1548 17.7199C36.1519 17.9311 36.1045 18.1394 36.0155 18.3311C35.9265 18.5228 35.798 18.6934 35.6384 18.832C35.7987 18.9677 35.9279 19.1365 36.017 19.3267C36.1061 19.5169 36.1531 19.7241 36.1548 19.9341V26.7955C36.1531 27.0055 36.1061 27.2127 36.017 27.4029C35.9279 27.5932 35.7987 27.7619 35.6384 27.8976C35.799 28.0353 35.9282 28.2059 36.0172 28.3977C36.1063 28.5895 36.1532 28.7983 36.1548 29.0098V35.8711C36.1531 36.0811 36.1061 36.2883 36.017 36.4786C35.9279 36.6688 35.7987 36.8375 35.6384 36.9733C35.798 37.1118 35.9265 37.2825 36.0155 37.4741C36.1045 37.6658 36.1519 37.8741 36.1548 38.0854V44.9467C36.1522 45.3374 35.9951 45.7111 35.7179 45.9864C35.4408 46.2618 35.0659 46.4163 34.6753 46.4163H14.1807C13.79 46.4163 13.4152 46.2618 13.138 45.9864C12.8608 45.7111 12.7038 45.3374 12.7012 44.9467V38.0854C12.704 37.8741 12.7515 37.6658 12.8405 37.4741C12.9294 37.2825 13.0579 37.1118 13.2175 36.9733C13.0572 36.8375 12.9281 36.6688 12.839 36.4786C12.7499 36.2883 12.7029 36.0811 12.7012 35.8711V29.0098C12.7027 28.7983 12.7496 28.5895 12.8387 28.3977C12.9278 28.2059 13.0569 28.0353 13.2175 27.8976C13.0572 27.7619 12.9281 27.5932 12.839 27.4029C12.7499 27.2127 12.7029 27.0055 12.7012 26.7955V19.9341C12.7029 19.7241 12.7499 19.5169 12.839 19.3267C12.9281 19.1365 13.0572 18.9677 13.2175 18.832C13.0579 18.6934 12.9294 18.5228 12.8405 18.3311C12.7515 18.1394 12.704 17.9311 12.7012 17.7199V10.8585C12.7012 10.4661 12.857 10.0898 13.1345 9.81237C13.412 9.53491 13.7883 9.37903 14.1807 9.37903H34.6753C35.0677 9.37903 35.444 9.53491 35.7214 9.81237C35.9989 10.0898 36.1548 10.4661 36.1548 10.8585V17.7199Z"
+                fill="white"
+              ></path>
+              <path
+                d="M34.6853 38.0856H14.1807V44.9469H34.6853V38.0856Z"
+                fill="white"
+              ></path>
+            </g>
+            <defs>
+              <clipPath id="clip0_118_277">
+                <rect
+                  width="47.6619"
+                  height="47.6619"
+                  fill="white"
+                  transform="translate(0.597107 0.690674)"
+                ></rect>
+              </clipPath>
+            </defs>
+          </svg>
+        </div>
+      </div>
+    </div>
+    <p class="benefit-description">
+      Aids in Recovery & Reduces Muscle Soreness Post-Training
+    </p>
+  </div>
+</div>
+</div>
+<div class="supplement-facts">
+    <div class="facts-info-img">
+        <div class="facts-info mobile">
+        <h4 class="fact-top-text">
+            Fully Disclosed Formula. Premium Patented Ingredients.
+        </h4>
+        <h2 class="fact-title">
+            Backed by Science at Scientifically Studied Doses!
+        </h2>
+    </div>
+        <img src="https://cdn.shopify.com/s/files/1/0617/7918/1757/files/facts.jpg?v=1658811825" alt="Supplement Facts">
+    </div>
+    <div class="facts-info">
+        <h4 class="fact-top-text">
+            Fully Disclosed Formula. Premium Patented Ingredients.
+        </h4>
+        <h2 class="fact-title">
+            Backed by Science at Scientifically Studied Doses!
+        </h2>
+        <p class="fact-content-info">
+            Only cowards hide behind magical “blends” in their formulas that are simply marketing excuses for underdosed ingredients and ineffective products.
+        </p>
+        <p class="fact-content-info-prelist">
+            We take pride in our Full Label Disclosure, so you see the dose used in EVERY ingredient inside, which means:
+        </p>
+        <ul class="list-facts-content">
+            <li>No Proprietary Blends (aka full transparency)</li>
+            <li>Scientifically studies premium ingredients</li>
+            <li>No B.S.</li>
+            <li>And most importantly… No Excuses</li>
+        </ul>
+    </div>
+</div>
+<div class="guarantee">
+    <div class="guarantee-container">
+        <div class="guarantee-img">
+            <img src="https://cdn.shopify.com/s/files/1/0617/7918/1757/files/money-back-seal_2b055c47-2f20-49b0-8c55-2af0db27d18a.png?v=1658813622" alt="Money Guarantee">
+        </div>
+        <div class="guarantee-info">
+            <h2 class="guarantee-title">365 Day Money Back Guarantee</h2>
+            <h4 class="guarantee-subtitle">WE STAND BY AN Industry leading 365 Day Money Back Guarantee</h4>
+            <p class="guarantee-description">If you don’t have an amazing experience with SuperHuman Sport, you have 365 days to ask for a full refund. We even let you keep the tub!</p>
+        </div>
+    </div>
+</div>
+<script>
+    var elem = document.querySelector('.carousel.product__image-slider');
+    var flkty = new Flickity(elem, {
+        contain: true,
+        imagesLoaded: true,
+        lazyLoad: 1,
+        wrapAround: true,
+        pageDots: false,
+    {% if product.images.size < 2 %}
+    prevNextButtons: false,
+        {% endif %}
+    adaptiveHeight: true
+    });
+    var elemThumbnail = document.querySelector('.carousel.product__image-thumbnail');
+    var flktyB = new Flickity(elemThumbnail, {
+        asNavFor: '.carousel.product__image-slider',
+        contain: true,
+        imagesLoaded: true,
+        lazyLoad: 4,
+        pageDots: false,
+        prevNextButtons: false
+    });
+</script>
+{% schema %}
+  {
+    "name": "Product Hero",
+    "settings": []
+  }
+{% endschema %}
+
+{% stylesheet %}
+{% endstylesheet %}
+
+{% javascript %}
+{% endjavascript %}
